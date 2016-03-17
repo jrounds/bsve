@@ -68,8 +68,7 @@ names(x$result[[1]])
 [7] "dataSources"
 ```
 
-Both `fields` and `dataSources` are arrays with 0 to many elements, so we
-can just grab the first 5 keys and count the number of fields
+Both `fields` and `dataSources` are arrays with 0 to many elements, so just grab the first 5 keys and count the number of fields
 and dataSources below.
 
 ```
@@ -100,20 +99,16 @@ b1[, c(1:2,6:7)]
 
 ###Notes on parsing lists with NULLs
 
-If you want to list fields or dataSources, `ldply` will return an error if [NULLs are present](http://stackoverflow.com/questions/15793759/convert-r-list-to-dataframe-with-missing-null-elements).
-
-I have included a few options below to avoid NULLs and parse the RSS
+If you want to list fields or dataSources, `ldply` will return an error if [NULLs are present](http://stackoverflow.com/questions/15793759/convert-r-list-to-dataframe-with-missing-null-elements). I have included a few options below to avoid NULLs and parse the RSS
 fields in element 10.
 
-
-*OPTION 1. Remove nulls before combining
+OPTION 1. Remove nulls before combining
 
 If you don't know where NULLs are found, you can remove them
 using `Filter`
 
 ```
 y <- lapply(x$result[[10]]$fields, Filter, f = Negate(is.null))
-
 ldply(y, "data.frame")
         name    type
 1      cases  String
@@ -129,16 +124,16 @@ ldply(y, "data.frame")
 ...
 ```
 
-*OPTION 2.  Skip NULL fields
+OPTION 2.  Skip NULL fields
 
-When you figure out where NULL fields are located, you can skip them.
+When you figure out where NULLs are located, you can skip them.
 ```
 ldply( lapply(x$result[[10]]$fields, "[",  1:2), "data.frame")
 ```
 
-*OPTION 3. USE `do.call`
+OPTION 3. USE `do.call`
 
-There are two problems with `do.call`.  First, if a tag if missing, it
+There are two problems with `do.call`.  First, if a tag if missing, I think it
  will fill the row by silenting repeating values.  Second, while the table
  looks correct, each column is actually a
  [list](https://stat.ethz.ch/pipermail/r-help//2012-November/340399.html)
@@ -152,11 +147,10 @@ as.data.frame(do.call("rbind", x$result[[10]]$fields ))
 ...
 ```
 
-
-*OPTION 4.   Use RJSONIO and replace nulls with NAs
+OPTION 4.   Use RJSONIO and replace NULLs with NAs
 
 The `RJSONIO` package has a `nullValue` option that lets you replace NULLs with NAs.
-This returns a different nested list than jsonlite with named vectors
+This returns a different nested list than `jsonlite` with named vectors
 instead of lists, so use rbind.
 
 ```
@@ -173,7 +167,7 @@ ldply( x1$result[[10]]$fields, "rbind")
 
 
 You can list the 65 RSS dataSources below.  Only the first 3 keys have
-non-NULL values and `fields` is an empty list except in SODA, which has
+non-NULL values and fields is an empty list except in SODA, which has
 an array with 4 elements like the result fields above. 
 
 ```
@@ -194,7 +188,7 @@ ldply( lapply(x$result[[10]]$dataSources, "[",  1:2), "data.frame")
 
 ###4.6 Querying the Datasource API
 
-Use `api/data/query` to query RSS or other datasets.  I think `$filter` is required, but I'm not that fmiliar with all the query options, so please send me examples or post them to issues.
+Use `api/data/query/{data}` to query RSS or other datasets.  I think `$filter` is required, but I'm not familiar with all the query options, so please send me examples or post them to [issues](https://github.com/cstubben/bsve/issues/1).
 
 ```
 url1 <- "http://search.bsvecosystem.net/api/data/query/RSS"
@@ -230,7 +224,7 @@ $query$filter
 
 You need the `requestId` from the results above to download the
 results.  I have not looked at this carefully, but I did figure out
-how to find titles (and these nested lists are a pain)
+how to find titles (and these nested lists are a way too complicated)
 
 ```
 url2 <- "http://search.bsvecosystem.net/api/data/result/"
@@ -243,9 +237,10 @@ names(x2$result[[1]]$hits)
 [1] "found"                "start"                "hit"                 
 [4] "additionalProperties"
 
-sapply(x2$result[[1]]$hits$hit, function(y) y$data$title[[1]])[1:5]
+sapply(x2$result[[1]]$hits$hit, function(y) y$data$title[[1]])
 [1] "EARLY RELEASE: Vital Signs: Preventing Antibiotic-Resistant Infections in Hospitals - United States, 2014" 
 [2] "SUPPLEMENTS: Development of the Community Health Improvement Navigator Database of Interventions" 
 [3] "RECOMMENDATIONS AND REPORTS: CDC Guideline for Prescribing Opioids for Chronic Pain - United States, 2016" 
 [4] "EARLY RELEASE: Transmission of Zika Virus Through Sexual Contact with Travelers to Areas of Ongoing Transmission - Continental United States, 2016"
+...
 ```
