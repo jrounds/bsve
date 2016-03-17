@@ -126,7 +126,7 @@ ldply(y, "data.frame")
 
 OPTION 2.  Skip NULL fields
 
-When you figure out where NULLs are located, you can skip them.
+When you figure out where NULLs are located, you can skip those keys.
 ```
 ldply( lapply(x$result[[10]]$fields, "[",  1:2), "data.frame")
 ```
@@ -224,7 +224,7 @@ $query$filter
 
 You need the `requestId` from the results above to download the
 results.  I have not looked at this carefully, but I did figure out
-how to find titles (and these nested lists are a way too complicated)
+how to find titles (and these nested lists are way too complicated)
 
 ```
 url2 <- "http://search.bsvecosystem.net/api/data/result/"
