@@ -222,7 +222,7 @@ $query$filter
 
 ###4.7 Getting Datasource Results
 
-You need the `requestId` from the results above to download the
+You need the `requestId` above to download the
 results.  I have not looked at this carefully, but I did figure out
 how to find titles (and these nested lists are way too complicated)
 
