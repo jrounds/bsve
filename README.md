@@ -21,7 +21,6 @@ under My Account -> Manage API Credentials and replace them below.
 api_key    <- "API key"
 secret_key <- "SECRET key"
 email      <- "and your@email"
-
 ```
 
 The `bsve_sha1` function creates the authentication header using the
