@@ -226,8 +226,7 @@ $query$filter
 
 You need the `requestId` above to download the
 results.  I have not looked at this carefully, but I did figure out
-how to find titles and dates (and these nested lists are way too complicated).  
-The dates can be converted using `as.POSIXct` below
+how to find titles and dates (and these nested lists are way too complicated).  The dates can be converted using `as.POSIXct`.
 
 ```
 url2 <- "http://search.bsvecosystem.net/api/data/result/"
@@ -247,7 +246,7 @@ sapply(x2$result[[1]]$hits$hit, function(y) y$data$title[[1]])
 [4] "EARLY RELEASE: Transmission of Zika Virus Through Sexual Contact with Travelers to Areas of Ongoing Transmission - Continental United States, 2016"
 ...
 
-z <- sapply(x2$result[[1]]$hits$hit, function(y) y$data$pubdate[[1]])
+z <- sapply(x2$result[[1]]$hits$hit, function(y) y$data$pubdate[[1]]) 
 [1] "1457112660000" "1456509505000" "1457112600000" "1456511400000" "1456507345000"
 [6] "1456500085000" "1456511400000"
 
