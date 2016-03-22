@@ -15,18 +15,20 @@ install_github("cstubben/bsve")
 ###Connecting
 
 You will need to get the API and secret key from the developer site
-under My Account -> Manage API Credentials and add them below.
+under My Account -> Manage API Credentials and replace them below.
 
 ```
-api_key <- "AKcfef08f1-c852-43b9-bce7-8923880e3b68"
-secret_key <-  "#replace with SECRET key"
+api_key    <- "API key"
+secret_key <- "SECRET key"
+email      <- "and your@email"
+
 ```
 
 The `bsve_sha1` function creates the authentication header using the
 two keys and a valid email.
 
 ```
-email <-  "#replace with your@email"
+
 token <- bsve_sha1(api_key, secret_key, email)
 token
 [1] "apikey=AKcfef08f1-c852-43b9-bce7-8923880e3b68;timestamp=1457989545992;nonce=535514;signature=f6b90ed483b37..."
