@@ -190,7 +190,7 @@ ldply( lapply(x$result[[10]]$dataSources, "[",  1:2), "data.frame")
 
 ###4.6 Querying the Datasource API
 
-Use `api/data/query/{data}` to query RSS or other datasets.  I think `$filter` is required, but I'm not familiar with all the query options, so please send me examples or post them to [issues](https://github.com/cstubben/bsve/issues/1).
+Use `api/data/query/{data}` to query RSS or other datasets.  I'm not familiar with all the query options, so please send me examples or post them to [issues](https://github.com/cstubben/bsve/issues/1).
 
 ```
 url1 <- "http://search.bsvecosystem.net/api/data/query/RSS"
