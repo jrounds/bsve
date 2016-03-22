@@ -245,17 +245,14 @@ sapply(x2$result[[1]]$hits$hit, function(y) y$data$title[[1]])
 [2] "SUPPLEMENTS: Development of the Community Health Improvement Navigator Database of Interventions" 
 [3] "RECOMMENDATIONS AND REPORTS: CDC Guideline for Prescribing Opioids for Chronic Pain - United States, 2016" 
 [4] "EARLY RELEASE: Transmission of Zika Virus Through Sexual Contact with Travelers to Areas of Ongoing Transmission - Continental United States, 2016"
+...
 
 z <- sapply(x2$result[[1]]$hits$hit, function(y) y$data$pubdate[[1]])
 [1] "1457112660000" "1456509505000" "1457112600000" "1456511400000" "1456507345000"
 [6] "1456500085000" "1456511400000"
 
-as.POSIXct( round(as.numeric(z)/1000), origin = "1960-01-01")
-[1] "2006-03-04 10:31:00 MST" "2006-02-25 10:58:25 MST" "2006-03-04 10:30:00 MST"
-
-
-
-...
+as.POSIXct( round(as.numeric(z)/1000), origin = "1970-01-01")
+[1] "2016-03-04 10:31:00 MST" "2016-02-25 10:58:25 MST" "2016-03-04 10:30:00 MST" ...
 ```
 
 These last two steps are combined in the `get_bsve` function.  Without a filter, all 794 titles are returned.  The function includes API options for `top`, `skip`  and `orderby`,  but currently they do not seem to change the results!
