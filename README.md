@@ -15,18 +15,19 @@ install_github("cstubben/bsve")
 ###Connecting
 
 You will need to get the API and secret key from the developer site
-under My Account -> Manage API Credentials and add them below.
+under My Account -> Manage API Credentials and replace them below.
 
 ```
-api_key <- "AKcfef08f1-c852-43b9-bce7-8923880e3b68"
-secret_key <-  "#replace with SECRET key"
+api_key    <- "API key"
+secret_key <- "SECRET key"
+email      <- "and your@email"
 ```
 
 The `bsve_sha1` function creates the authentication header using the
 two keys and a valid email.
 
 ```
-email <-  "#replace with your@email"
+
 token <- bsve_sha1(api_key, secret_key, email)
 token
 [1] "apikey=AKcfef08f1-c852-43b9-bce7-8923880e3b68;timestamp=1457989545992;nonce=535514;signature=f6b90ed483b37..."
@@ -188,7 +189,7 @@ ldply( lapply(x$result[[10]]$dataSources, "[",  1:2), "data.frame")
 
 ###4.6 Querying the Datasource API
 
-Use `api/data/query/{data}` to query RSS or other datasets.  I think `$filter` is required, but I'm not familiar with all the query options, so please send me examples or post them to [issues](https://github.com/cstubben/bsve/issues/1).
+Use `api/data/query/{data}` to query RSS or other datasets.  I'm not familiar with all the query options, so please send me examples or post them to [issues](https://github.com/cstubben/bsve/issues/1).
 
 ```
 url1 <- "http://search.bsvecosystem.net/api/data/query/RSS"
@@ -224,7 +225,7 @@ $query$filter
 
 You need the `requestId` above to download the
 results.  I have not looked at this carefully, but I did figure out
-how to find titles (and these nested lists are way too complicated)
+how to find titles and dates (and these nested lists are way too complicated).  The dates can be converted using `as.POSIXct`.
 
 ```
 url2 <- "http://search.bsvecosystem.net/api/data/result/"
@@ -243,4 +244,24 @@ sapply(x2$result[[1]]$hits$hit, function(y) y$data$title[[1]])
 [3] "RECOMMENDATIONS AND REPORTS: CDC Guideline for Prescribing Opioids for Chronic Pain - United States, 2016" 
 [4] "EARLY RELEASE: Transmission of Zika Virus Through Sexual Contact with Travelers to Areas of Ongoing Transmission - Continental United States, 2016"
 ...
+
+z <- sapply(x2$result[[1]]$hits$hit, function(y) y$data$pubdate[[1]]) 
+[1] "1457112660000" "1456509505000" "1457112600000" "1456511400000" "1456507345000"
+[6] "1456500085000" "1456511400000"
+
+as.POSIXct( round(as.numeric(z)/1000), origin = "1970-01-01")
+[1] "2016-03-04 10:31:00 MST" "2016-02-25 10:58:25 MST" "2016-03-04 10:30:00 MST" ...
 ```
+
+These last two steps are combined in the `get_bsve` function.  Without a filter, all 794 titles are returned.  The function includes API options for `top`, `skip`  and `orderby`,  but currently they do not seem to change the results!
+
+```
+x1 <- get_bsve(token, "RSS", source ="CDC MMWR Reports")
+x2 <- get_bsve(token, "RSS", source ="CDC MMWR Reports", filter="pubdate ge 2016-02-01")
+## same 7 unsorted titles as x2
+x3 <- get_bsve(token, "RSS", source ="CDC MMWR Reports", filter="pubdate ge 2016-02-01", orderby="pubdate DESC", top=5)
+
+```
+
+
+
