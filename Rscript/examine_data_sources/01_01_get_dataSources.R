@@ -32,6 +32,9 @@ token = bsve_sha1(APIKEY, SECRETKEY, EMAIL)  #SECRETKEY IS R SOURCED
 
 
 dsources = dataSources(token)
+#---------------------------------------------------------------------------------
+# Process data sources in lapply
+#---------------------------------------------------------------------------------
 ret = lapply(1:nrow(dsources), function(i){
 	i0 <<- i
 	dst <<- dataSourceType <- dsources[i,1]
@@ -47,27 +50,30 @@ is_null = sapply(ret, is.null)
 str(ret, max.level = 3)
 
 saveRDS(ret, file.path(package_root, "data", "working_data_dump.rds"))
-
-
 ret  = readRDS(file.path(package_root, "data", "working_data_dump.rds"))
 
 
-
+#---------------------------------------------------------------------------------
+# Extraction section
+#---------------------------------------------------------------------------------
 
 
 #---------------------------------------------------------------------------------
-# RSS DATA
+# Extract RSS DATA
 #---------------------------------------------------------------------------------
 RSS = lapply(ret, extract.RSS) 
 RSS = rbindlist(RSS, use.names = TRUE)
 
-
+fout = file.path(package_root, "data", "RSS.rds")
+saveRDS(RSS, fout)
 
 
 #---------------------------------------------------------------------------------
-# SODA
+# Extract SODA DATA
 #---------------------------------------------------------------------------------
 SODA = lapply(ret, extract.SODA)
+fout = file.path(package_root, "data", "SODA.rds")
+saveRDS(SODA, fout)
 #SODA seems to have two types
 # Type1: weekly disease
 # Type2: development indicators
@@ -77,15 +83,27 @@ SODA_1 = rbindlist(SODA[type1])
 table(SODA_1$mmwr_year)
 SODA_2 = rbindlist(SODA[type2])
 
+
+#some info about diseases
+which = grep("_cum_2016$", SODA_1$variable, value=TRUE) 
+u = unique(which)
+u = gsub("_cum_2016", "", u)
+
+
+#---------------------------------------------------------------------------------
+# Some output
+#---------------------------------------------------------------------------------
 library(XLConnect)
-wb <- loadWorkbook(file.path(package_root, "data", "data_dump.xlsx"), create=TRUE)
-createSheet(wb, t <- "RSS")
-writeWorksheet(wb, RSS, t)
+wb <- loadWorkbook(file.path(package_root, "data", "bsve_data.xlsx"), create=TRUE)
+createSheet(wb, t <- "dataSources")
+writeWorksheet(wb, dsources, t)
 saveWorkbook(wb)
-
-
-
-
+createSheet(wb, t <- "example_RSS")
+writeWorksheet(wb, head(as.data.frame(RSS), 500), t)
+saveWorkbook(wb)
+createSheet(wb, t <- "example_SODA")
+writeWorksheet(wb, head(as.data.frame(SODA_1), 500), t)
+saveWorkbook(wb)
 
 
 
