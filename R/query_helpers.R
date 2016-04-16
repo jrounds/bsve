@@ -70,6 +70,8 @@ extract.RSS = function(r){
 		d
 	})
 	hdata = rbindlist(hdata)
+	hdata$source = r$query$source
+	hdata
 }
 extract.SODA = function(r){
 	r <<- r
@@ -95,6 +97,7 @@ extract.SODA = function(r){
 	})
 
 	data2 = rbindlist(data, use.names=TRUE, fill=TRUE)
+	data2$source = r$query$sources
 	data2
 	
 }
