@@ -109,15 +109,29 @@ SODA_2 = rbindlist(SODA[type2])
 # A series of "ONE OFF" examinations to understand some issues in the data
 #---------------------------------------------------------------------------------
 	setkeyv(SODA_1, c("reporting_area", "source"))
+	
+#---------------------------------------------------------------------------------
+# Some information about sources
+#---------------------------------------------------------------------------------
 	unique(subset(SODA_1, reporting_area == "Worcester, MA")$source)
 	unique(subset(SODA_1, reporting_area == "W.S. CENTRAL")$source)
 	unique(subset(SODA_1, reporting_area == "W.S. Central")$source)
+#---------------------------------------------------------------------------------
+# Some information about the unusual sources
+#---------------------------------------------------------------------------------
 	subset(SODA_1, source=="Human Development Index")
 	subset(SODA_1, source =="Hepatitis viral and acute")
-	filter = "reporting_area eq KENTUCKY and mmwr_year eq 2016"
 	unique(SODA_1)
 	setkey(SODA_1, variable)
+#---------------------------------------------------------------------------------
+# Not sure why there are duplicates and msising weeks
+#---------------------------------------------------------------------------------
 	subset(SODA_1, variable == "spotted_fever_rickettsiosis_including_rmsf_confirmed_current_week" & reporting_area == "KENTUCKY")
+	
+#---------------------------------------------------------------------------------
+# Using a filter 
+#---------------------------------------------------------------------------------
+	filter = "reporting_area eq KENTUCKY and mmwr_year eq 2016"
 	hmm = lapply(1:14, function(i) {
 		f = paste(filter, "and mmwr_week eq ", i) 
 		token = bsve_sha1(APIKEY, SECRETKEY, EMAIL)  #SECRETKEY IS R SOURCED
@@ -126,26 +140,45 @@ SODA_2 = rbindlist(SODA[type2])
 		#extract.SODA(hmm)
 		hmm
 	})
-	hmm4 = lapply(hmm, extract.SODA)
-	hmm3 = lapply(hmm4, subset,  variable == "syphilis_primary_and_secondary_current_week")
+
+	soda0 = lapply(hmm, extract.SODA)
+	#---------------------------------------------------------------------------------
+	# single variable
+	#---------------------------------------------------------------------------------
+	hmm3 = lapply(soda0, subset,  variable == "syphilis_primary_and_secondary_current_week")
 	hmm2 = rbindlist(hmm3)
+	#---------------------------------------------------------------------------------
+	# still not sure why there are duplicates?
+	#---------------------------------------------------------------------------------
 	setkeyv(hmm2, colnames(hmm2))
-	hmm2 = unique(hmm2)
+	hmm2 = unique(hmm2)  #<---- FORCING DUPS TO GO AWAY
 	setorder(hmm2, "mmwr_week")
+	#---------------------------------------------------------------------------------
+	# Getting example data for document:
+	#---------------------------------------------------------------------------------
 	hmm5 = subset(hmm2, select=c("variable", "value", "mmwr_year", "mmwr_week", "reporting_area", "source"))
 	library(xtable)
 	print(xtable(hmm5), type="html")
-	hmm0 = subset(hmm2,  variable == "syphilis_primary_and_secondary_current_week")
+	
+	#---------------------------------------------------------------------------------
+	# How many total variables for each reporting area?
+	#---------------------------------------------------------------------------------
 	total = unlist(lapply(SODA_AGGREGATIONS, function(a) length(unique(subset(SODA_1, reporting_area == a)$variable))))
 	names(total) = SODA_AGGREGATIONS
+	#---------------------------------------------------------------------------------
+	# Ogden, UT?
+	#---------------------------------------------------------------------------------
 	subset(SODA_1, reporting_area == "Ogden, UT")
 	
-	
-	hmm =  get_bsve(token, "SODA", "Spotted Fever Rickettsiosis to Syphilis", filter = f)
-
-		SODA_SERIES = unique(SODA_1$variable)
+	#---------------------------------------------------------------------------------
+	# Unique levels
+	#---------------------------------------------------------------------------------
+	SODA_SERIES = unique(SODA_1$variable)
 	SODA_AGGREGATIONS = unique(SODA_1$reporting_area)
-#some info about diseases
+	
+#---------------------------------------------------------------------------------
+# Unique diseases
+#---------------------------------------------------------------------------------
 which = grep("_cum_2016$", SODA_1$variable, value=TRUE) 
 u = unique(which)
 u = gsub("_cum_2016", "", u)
