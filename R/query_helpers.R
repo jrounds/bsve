@@ -12,6 +12,56 @@ bsveGET = function(token, URL, ...){
 }
 
 
+getMaxTop = function(token , dataSourceType="RSS", source ="CDC MMWR Reports", filter=NULL){
+	#getMaxTop induces an error to see how large top can be and then parses the error. 
+	#Find me a better way within BSVE?  
+	res = unlist(try({get_bsve(token = token, dataSourceType=dataSourceType, source=source, filter=filter,top = 10^9)},silent=TRUE))
+	#x <<- x
+	#try({ res = x$errors[[1]]$errorMessage})
+	#res <<- res;
+	res = unlist(strsplit(res, " "))
+	res = tail(res,1)
+	as.integer(res)
+	as.integer(tail(unlist(strsplit(unlist(res), " ")),1))
+	
+	
+}
+
+getAll = function(token , dataSourceType="RSS", source ="CDC MMWR Reports", filter= NULL, top = NULL){
+	if(is.null(top))
+		top =getMaxTop(token, dataSourceType, source,filter)
+	system.time({
+		x = get_bsve(token = token, dataSourceType=dataSourceType, source=source,filter=filter, top)
+	})
+	x
+	
+	
+	
+}
+
+#to slow to be useful...
+getAllIterative = function(token, dataSourceType="RSS",  source ="CDC MMWR Reports" , filter= NULL){
+
+	system.time({
+		res = list()
+		skip = 0
+		nrecs = getMaxTop(token, dataSourceType, source, filter)
+		s = seq(0, nrecs, by =1000)
+		x = lapply(s, function(skip) get_bsve(token = token, dataSourceType=dataSourceType, source=source,filter=filter, skip=skip))
+	})
+	x 
+}
+if(FALSE){
+	dataSourceType = "SODA"
+	source = "Babesiosis to Campylobacteriosis"
+	system.time({
+		x2 = getAllIterative(token, dataSourceType, source=source)
+	})
+	system.time({
+		x1 = getAll(token, dataSourceType, source=source)
+	})
+}
+
 #' dataSources
 #'
 #' @param token 
@@ -53,7 +103,7 @@ dataSources = function(token){
 # extract RSS data 
 extract.RSS = function(r){
 	r <<- r
-	if(is.null(r) || is.null(r$query) || is.null(r$query$type) || r$query$type != "RSS")
+	if(is.null(r) || !inherits(r, "list") || is.null(r$query) || is.null(r$query$type) || r$query$type != "RSS")
 		return(NULL)
 	res = r$result
 	hits = res[[1]]$hits
@@ -75,7 +125,7 @@ extract.RSS = function(r){
 }
 extract.SODA = function(r){
 	r <<- r
-	if(is.null(r) || is.null(r$query) || is.null(r$query$type) || r$query$type != "SODA")
+	if(is.null(r) || !inherits(r, "list") ||is.null(r$query) || is.null(r$query$type) || r$query$type != "SODA")
 		return(NULL)
 	res = r$result
 	json = res[[1]]

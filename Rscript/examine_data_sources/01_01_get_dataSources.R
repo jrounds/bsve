@@ -4,6 +4,7 @@
 library(data.table)
 library(jsonlite)
 library(httr)
+library(xtable)
 package_root_path = function (path = ".") 
 {
   stopifnot(is.character(path))
@@ -37,19 +38,44 @@ dsources = dataSources(token)
 #---------------------------------------------------------------------------------
 ret = lapply(1:nrow(dsources), function(i){
 	i0 <<- i
-	dst <<- dataSourceType <- dsources[i,1]
-	s <<- source <- dsources[i,2]
-	message(dst)
+	dst0  <<- dsources[i,1]
+	s <<- dsources[i,2]
+	message(dst0)
 	message(s)
-	if(source == "NA_ZERO_LENGTH_")
+	if(s== "NA_ZERO_LENGTH_")
 		return(NULL)
-	get_bsve(token, dataSourceType, source)
+	if(dst0 != "SODA")
+		return(NULL)
+	#get_bsve(token, dataSourceType, source)
+	'
+		dst0 = "SODA"
+		s = "MMWR Weekly influenza and pneumonia deaths"
+    '
+	for(i in 1:3){
+		message("Attempt")
+		message(i)
+		ret  = try({getAll(token, dst0, s)})
+		if(!inherits(ret, "try-error"))
+			return(ret)
+	}
 })
-is_null = sapply(ret, is.null)
+is_null = sapply(ret, inherits, "try-error")
 
 str(ret, max.level = 3)
 
 saveRDS(ret, file.path(package_root, "data", "working_data_dump.rds"))
+
+
+ 'Error in if (x1$status == -1) stop(x1$errors[[1]]$errorMessage) : 
+  argument is of length zero '
+
+
+
+
+
+
+
+
 ret  = readRDS(file.path(package_root, "data", "working_data_dump.rds"))
 v = ret[[8]]
 names = lapply(ret, function(v) {
@@ -97,13 +123,14 @@ SODA[[89]]
 # Type2: development indicators
 type1 = unlist(lapply(SODA, function(v) length(grep("mmwr", colnames(v))) > 0))
 type2 = unlist(lapply(SODA, function(v) length(grep("seriescode", colnames(v))) > 0))
-SODA_1 = rbindlist(SODA[type1])
+SODA_1 = rbindlist(SODA[type1], use.names=TRUE, fill=TRUE)
 table(SODA_1$mmwr_year)
-SODA_2 = rbindlist(SODA[type2])
+SODA_2 = rbindlist(SODA[type2], use.names=TRUE, fill=TRUE)
 
 
-
-
+SODA_1_old = SODA_1
+setkeyv(SODA_1_old, colnames(SODA_1_old))
+SODA_1 = unique(SODA_1_old)
 
 #---------------------------------------------------------------------------------
 # A series of "ONE OFF" examinations to understand some issues in the data
@@ -132,6 +159,7 @@ SODA_2 = rbindlist(SODA[type2])
 # Using a filter 
 #---------------------------------------------------------------------------------
 	filter = "reporting_area eq KENTUCKY and mmwr_year eq 2016"
+	hmm = get_bsve(token, "SODA", "Spotted Fever Rickettsiosis to Syphilis", 
 	hmm = lapply(1:14, function(i) {
 		f = paste(filter, "and mmwr_week eq ", i) 
 		token = bsve_sha1(APIKEY, SECRETKEY, EMAIL)  #SECRETKEY IS R SOURCED
@@ -140,6 +168,7 @@ SODA_2 = rbindlist(SODA[type2])
 		#extract.SODA(hmm)
 		hmm
 	})
+	
 
 	soda0 = lapply(hmm, extract.SODA)
 	#---------------------------------------------------------------------------------
@@ -183,6 +212,17 @@ which = grep("_cum_2016$", SODA_1$variable, value=TRUE)
 u = unique(which)
 u = gsub("_cum_2016", "", u)
 #
+#---------------------------------------------------------------------------------
+# Inspecting how to get the full data set by finding a SODA that doesn't return the full amount on the first pass
+#---------------------------------------------------------------------------------
+r1 = get_bsve(token, "SODA", source="Lyme disease to Meningococcal")
+r2 = get_bsve(token, "SODA", source="Lyme disease to Meningococcal", top=10^9)
+r3  = get_bsve(token,"SODA",  source="Lyme disease to Meningococcal", top = getMaxTop(token, "SODA", source="Lyme disease to Meningococcal"))
+r4 = getMaxTop(token,"SODA",  source="Lyme disease to Meningococcal")
+r5 = getAll(token,"SODA",  source="Lyme disease to Meningococcal")
+r6 = getAll(token, "SODA", source="Babesiosis to Campylobacteriosis")
+
+
 
 
 #---------------------------------------------------------------------------------
